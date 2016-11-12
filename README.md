@@ -5,9 +5,13 @@ This is the Python implementation of Shisetsu. Both this implementation and the 
 
 # Quick Start
 
-To start a Server:
+1. Install Redis and start the Redis server
+2. Clone Shisetsu, install requirements with `pip install -r requirements.txt`
+3. Open up a Python terminal
+
+To start a Shisetsu Server:
 ```python
-from shisetsu.client import Server
+from shisetsu.server import Server
 import time
 
 # Create a Server on the 'time' Redis channel bound to the time module
@@ -15,7 +19,7 @@ s = Server('time', time)
 s.run()
 ```
 
-To call `time.clock()` on the remote server:
+To call `time.clock()` on the server:
 ```python
 from shisetsu.client import Client
 
@@ -27,7 +31,7 @@ or, alternatively
 ```python
 from shisetsu.client import CallableClient
 
-c = Client('time')
+c = CallableClient('time')
 c.clock()
 ```
 
