@@ -11,6 +11,7 @@ from redis import StrictRedis
 from .contract import Contract, Request, Response, Failure
 from .exceptions import RequestFailure, TimeoutError
 from .logger import Logger
+from .middlewares import Middlewares
 
 
 class Client(object):
@@ -21,6 +22,7 @@ class Client(object):
                  raise_on_failure=True):
         self.channel = channel
         self.logger = Logger(channel).get()
+        self.middlewares = Middlewares()
         self.raise_on_failure = raise_on_failure
         self.redis_client = StrictRedis(host, port, db)
         self.response_channel = self.redis_client.pubsub(
@@ -35,6 +37,7 @@ class Client(object):
         and no response is received, otherwise blocks indefinitely.
         """
         request = Request(func, *args, **kwargs)
+        self.middlewares.execute_before(request)
         self.response_channel.subscribe(request.digest)
         self.redis_client.publish(self.channel, Contract.send(request))
         start = time.time()
@@ -43,6 +46,7 @@ class Client(object):
             if message and message['type'] == 'message':
                 response = Contract.receive(message['data'], request.digest)
                 if response:
+                    self.middlewares.execute_after(response)
                     if isinstance(response, Response):
                         self.response_channel.unsubscribe(Request.digest)
                         return response.get()

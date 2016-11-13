@@ -6,8 +6,8 @@ This is the Python implementation of Shisetsu. Both this implementation and the 
 # Quick Start
 
 1. Install Redis and start the Redis server
-2. Clone Shisetsu, install requirements with `pip install -r requirements.txt`
-3. Open up a Python terminal
+2. `$ pip install shisetsu` or clone this repo and run `$ python setup.py install`
+3. Open up Python
 
 To start a Shisetsu Server:
 ```python
@@ -42,9 +42,9 @@ See [PROTOCOL.md](PROTOCOL.md).
 # Future Plans (soon)
 
 - [x] ~~Client Timeout~~ (done in v0.1.1)
-- [ ] Middlewares
+- [x] ~~Middlewares~~ (done in v0.1.2)
 - [ ] Tests
-- [ ] Release on PyPi
+- [x] ~~Release on PyPi~~ (done in v0.1.2)
 - [ ] Authorization/authentication support
 - [ ] Async (Python 3 `async`/`await`?)
 - [ ] [Request more](https://github.com/KixPanganiban/shisetsu/issues/)
