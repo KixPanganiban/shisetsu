@@ -10,6 +10,7 @@ from redis import StrictRedis
 
 from .contract import Contract, Failure, Response
 from .logger import Logger
+from .middlewares import Middlewares
 
 
 class Server(object):
@@ -26,6 +27,7 @@ class Server(object):
         self.funcs = funcs
         self.inbox = None
         self.logger = Logger(channel).get()
+        self.middlewares = Middlewares()
         self.redis_client = StrictRedis(host, port, db)
         self.running = False
 
@@ -37,8 +39,10 @@ class Server(object):
         try:
             self.logger.info('Received Request `%s`: %s(%s, %s)',
                              request.digest, func, str(args), str(kwargs))
+            self.middlewares.execute_before(request)
             func_exec = getattr(self.funcs, func)
             response = Response(request.digest, func_exec(*args, **kwargs))
+            self.middlewares.execute_after(response)
             self._publish(response)
             self.logger.info('Fulfilled Request `%s`: %s(%s, %s)',
                              response.request_digest, func, str(args),

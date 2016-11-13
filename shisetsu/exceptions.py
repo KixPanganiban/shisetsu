@@ -1,10 +1,15 @@
 """
-shisetsu.contract
+shisetsu.exceptions
 <github.com/kixpanganiban>
 
 Contains `DigestMismatch`.
 """
 
+
+class MiddlewareError(Exception):
+    """Raised when a middleware doesn't return a contract.
+    """
+    pass
 
 class RequestFailure(Exception):
     """Raised when a Contract was not fulfilled.
