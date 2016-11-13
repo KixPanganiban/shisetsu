@@ -41,7 +41,7 @@ See [PROTOCOL.md](PROTOCOL.md).
 
 # Future Plans (soon)
 
-- [ ] Client Timeout
+- [x] ~~Client Timeout~~ (done in v0.1.1)
 - [ ] Middlewares
 - [ ] Tests
 - [ ] Release on PyPi

@@ -9,7 +9,7 @@ import time
 from redis import StrictRedis
 
 from .contract import Contract, Request, Response, Failure
-from .exceptions import RequestFailure
+from .exceptions import RequestFailure, TimeoutError
 from .logger import Logger
 
 
@@ -17,7 +17,7 @@ class Client(object):
     """A Client handles requesting a Server to fulfill a Request,
     and returns the Response body or the Failure details.
     """
-    def __init__(self, channel, host='localhost', port=6379, db=0,
+    def __init__(self, channel, timeout=3, host='localhost', port=6379, db=0,
                  raise_on_failure=True):
         self.channel = channel
         self.logger = Logger(channel).get()
@@ -26,14 +26,18 @@ class Client(object):
         self.response_channel = self.redis_client.pubsub(
             ignore_subscribe_messages=True
         )
+        self.timeout = timeout
 
     def call(self, func, *args, **kwargs):
-        """Execute a remote func, that is: create a Request and pass it to the
-        remote Server. Will block until request is received.
+        """Execute a remote `func`, that is: create a Request and pass it to the
+        remote Server. Will block until request is received. If `self.timeout`
+        is set, will raise a TimeoutError if `self.timeout` seconds have passed
+        and no response is received, otherwise blocks indefinitely.
         """
         request = Request(func, *args, **kwargs)
         self.response_channel.subscribe(request.digest)
         self.redis_client.publish(self.channel, Contract.send(request))
+        start = time.time()
         while True:
             message = self.response_channel.get_message()
             if message and message['type'] == 'message':
@@ -49,7 +53,15 @@ class Client(object):
                         else:
                             self.response_channel.unsubscribe(Request.digest)
                             return response
+            if (self.timeout is not None
+                    and time.time() >= start + self.timeout):
+                raise TimeoutError(func, self.timeout)
             time.sleep(0.001)
+
+    def set_timeout(self, timeout):
+        """Sets the client timeout duration in seconds.
+        """
+        self.timeout = timeout
 
 
 class CallableClient(Client):
