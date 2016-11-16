@@ -11,13 +11,16 @@ This is the Python implementation of Shisetsu. Both this implementation and the 
 
 To start a Shisetsu Server:
 ```python
-from shisetsu.server import Server
 import time
+
+from shisetsu.server import Server
 
 # Create a Server on the 'time' Redis channel bound to the time module
 s = Server('time', time)
 s.run()
 ```
+(see [example_server.py](examples/example_server.py))
+
 
 To call `time.clock()` on the server:
 ```python
@@ -34,6 +37,7 @@ from shisetsu.client import CallableClient
 c = CallableClient('time')
 c.clock()
 ```
+(see [example_client.py](examples/example_client.py))
 
 # Protocol Specs
 

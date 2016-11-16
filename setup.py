@@ -6,7 +6,7 @@ from distutils.core import setup
 from pip.req import parse_requirements
 from pip.download import PipSession
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 REQUIREMENTS = [str(req) for req in parse_requirements(
     'requirements.txt',
