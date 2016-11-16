@@ -91,8 +91,9 @@ class CallableClient(Client):
         def _wrapped_call(*args, **kwargs):
             return self.call(name, *args, **kwargs)
 
-        if name not in ['call', 'channel', 'logger', 'raise_on_failure',
-                        'redis_client', 'response_channel']:
+        if name not in ['call', 'channel', 'middlewares', 'logger',
+                        'raise_on_failure', 'redis_client',
+                        'response_channel', 'timeout']:
             return _wrapped_call
         else:
             return super(CallableClient, self).__getattribute__(name)
