@@ -74,10 +74,8 @@ class Contract(object):
         elif payload[0] == Contract.CONTRACT_FAILURE:
             contract = Failure.load(payload)
 
-        if (contract_digest is not None
-                and payload[0] in [Contract.CONTRACT_RESPONSE,
-                                   Contract.CONTRACT_FAILURE]):
-            if contract.headers == contract_digest:
+        if contract_digest is not None and not isinstance(contract, Request):
+            if contract.request_digest == contract_digest:
                 return contract
             else:
                 return False
@@ -102,8 +100,8 @@ class Request(Contract):
     def __init__(self, func, *args, **kwargs):
         self.digest = kwargs.pop('digest', None)
         super(Request, self).__init__(
-            func,
-            [args, kwargs],
+            {'func': func},
+            {'args': args, 'kwargs': kwargs},
             Contract.CONTRACT_REQUEST
         )
 
@@ -111,28 +109,28 @@ class Request(Contract):
     def func(self):
         """Name of the function to fulfill this Request
         """
-        return self.headers
+        return self.headers['func']
 
     @property
     def args(self):
         """Function args
         """
-        return self.body[0]
+        return self.body['args']
 
     @property
     def kwargs(self):
         """Function kwargs
         """
-        return self.body[1]
+        return self.body['kwargs']
 
     @classmethod
     def load(cls, payload):
         """Return a new Request object from a payload.
         """
         digest = payload[1]
-        func = payload[2]
-        args = payload[3][0]
-        kwargs = payload[3][1]
+        func = payload[2]['func']
+        args = payload[3]['args']
+        kwargs = payload[3]['kwargs']
 
         request = cls(
             func,
@@ -153,14 +151,14 @@ class Response(Contract):
 
     def __init__(self, request_digest, body):
         super(Response, self).__init__(
-            request_digest,
+            {'request_digest': request_digest},
             body,
             Contract.CONTRACT_RESPONSE
         )
 
     @property
     def request_digest(self):
-        return self.headers
+        return self.headers['request_digest']
 
     def get(self):
         """Return the response body
@@ -171,7 +169,7 @@ class Response(Contract):
     def load(cls, payload):
         """Return a new Response object from a payload.
         """
-        request_digest = payload[2]
+        request_digest = payload[2]['request_digest']
         body = payload[3]
 
         response = cls(
@@ -197,30 +195,30 @@ class Failure(Contract):
         if not failure_code:
             failure_code = self.FAILURE_EXCEPTION
         super(Failure, self).__init__(
-            request_digest,
-            [failure_code, failure_message],
+            {'request_digest': request_digest},
+            {'failure_code': failure_code, 'failure_message': failure_message},
             Contract.CONTRACT_FAILURE
         )
 
     @property
     def request_digest(self):
-        return self.headers
+        return self.headers['request_digest']
 
     def get(self):
         """Return the `failure_code` and `failure_message`
         """
         return {
-            'failure_code': self.body[0],
-            'failure_message': self.body[1]
+            'failure_code': self.body['failure_code'],
+            'failure_message': self.body['failure_message']
         }
 
     @classmethod
     def load(cls, payload):
         """Return a new Failure object from a payload.
         """
-        request_digest = payload[2]
-        failure_code = payload[3][0]
-        failure_message = payload[3][1]
+        request_digest = payload[2]['request_digest']
+        failure_code = payload[3]['failure_code']
+        failure_message = payload[3]['failure_message']
 
         failure = cls(
             request_digest,
