@@ -1,2 +1,2 @@
 msgpack-python==0.4.8
-redis==2.10.5
+redis==4.5.3
